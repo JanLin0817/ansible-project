@@ -1,0 +1,12 @@
+---
+- name: Run all roles against linux hosts
+  hosts: linux
+  become: true
+  vars:
+    ansible_python_interpreter: /usr/bin/python3.9
+
+  roles:
+    - profile-n01742406
+    - user-n01742406
+    - datadisk-n01742406
+    - webserver-n01742406

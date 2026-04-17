@@ -1,0 +1,31 @@
+---
+- name: Create cloudadmins group
+  group:
+    name: cloudadmins
+
+- name: Create users with SSH keys (no passphrase)
+  user:
+    name: "{{ item }}"
+    groups: "{{ user_groups }}"
+    shell: /bin/bash
+    generate_ssh_key: true
+    ssh_key_bits: 2048
+    ssh_key_type: rsa
+  loop: "{{ user_list }}"
+
+- name: Authorize each user's own pubkey for SSH login
+  copy:
+    remote_src: true
+    src:  "/home/{{ item }}/.ssh/id_rsa.pub"
+    dest: "/home/{{ item }}/.ssh/authorized_keys"
+    owner: "{{ item }}"
+    group: "{{ item }}"
+    mode: '0600'
+  loop: "{{ user_list }}"
+
+- name: Download user100 private key from VM1 to automation server
+  fetch:
+    src:  /home/user100/.ssh/id_rsa
+    dest: "{{ playbook_dir }}/fetched_keys/user100_id_rsa"
+    flat: true
+  when: inventory_hostname == groups['linux'][0]

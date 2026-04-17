@@ -1,0 +1,9 @@
+[linux]
+n01742406-vm1.canadacentral.cloudapp.azure.com vm_index=1
+n01742406-vm2.canadacentral.cloudapp.azure.com vm_index=2
+n01742406-vm3.canadacentral.cloudapp.azure.com vm_index=3
+
+[linux:vars]
+ansible_user=n01742406
+ansible_ssh_private_key_file=/Users/n01742406/.ssh/id_rsa_azure
+ansible_ssh_common_args='-o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null'

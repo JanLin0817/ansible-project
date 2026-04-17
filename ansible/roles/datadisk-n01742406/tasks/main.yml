@@ -1,0 +1,50 @@
+---
+- name: Install partition/filesystem tools (skip if already present)
+  shell: |
+    for pkg in parted xfsprogs e2fsprogs; do
+      rpm -q "$pkg" >/dev/null 2>&1 || dnf install -y "$pkg"
+    done
+  register: pkg_install
+  changed_when: "'Installed' in pkg_install.stdout"
+
+- name: Resolve the Azure data disk device (any LUN on scsi1)
+  shell: |
+    set -e
+    for link in /dev/disk/azure/scsi1/lun*; do
+      [ -e "$link" ] || continue
+      readlink -f "$link"
+      exit 0
+    done
+    echo "No data disk found on scsi1" >&2
+    exit 1
+  register: datadisk_cmd
+  changed_when: false
+
+- name: Record resolved data disk device
+  set_fact:
+    datadisk_device: "{{ datadisk_cmd.stdout }}"
+
+- name: Create partitions on data disk
+  parted:
+    device: "{{ datadisk_device }}"
+    number: "{{ item.number }}"
+    state:  present
+    label:  gpt
+    part_start: "{{ item.start }}"
+    part_end:   "{{ item.end }}"
+  loop: "{{ datadisk_partitions }}"
+
+- name: Create filesystems on partitions
+  filesystem:
+    fstype: "{{ item.fs }}"
+    dev:    "{{ datadisk_device }}{{ item.number }}"
+  loop: "{{ datadisk_partitions }}"
+
+- name: Mount partitions persistently
+  mount:
+    src:    "{{ datadisk_device }}{{ item.number }}"
+    path:   "{{ item.mount }}"
+    fstype: "{{ item.fs }}"
+    opts:   defaults
+    state:  mounted
+  loop: "{{ datadisk_partitions }}"

@@ -1,0 +1,12 @@
+---
+datadisk_partitions:
+  - number: 1
+    start: 0%
+    end:   4096MiB
+    fs:    xfs
+    mount: /part1
+  - number: 2
+    start: 4096MiB
+    end:   9216MiB
+    fs:    ext4
+    mount: /part2

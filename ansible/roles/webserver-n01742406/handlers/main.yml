@@ -1,0 +1,5 @@
+---
+- name: Start Apache
+  service:
+    name: "{{ web_service }}"
+    state: started

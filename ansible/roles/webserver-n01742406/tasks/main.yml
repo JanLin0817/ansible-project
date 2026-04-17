@@ -1,0 +1,28 @@
+---
+- name: Install Apache (skip if already present)
+  shell: |
+    rpm -q {{ web_package }} >/dev/null 2>&1 || dnf install -y {{ web_package }}
+  register: apache_install
+  changed_when: "'Installed' in apache_install.stdout"
+
+- name: Create per-VM html file on automation server
+  copy:
+    dest: "{{ playbook_dir }}/vm{{ vm_index }}.html"
+    content: "{{ ansible_facts['fqdn'] }}\n"
+    mode: '0644'
+  delegate_to: localhost
+  become: false
+  vars:
+    ansible_python_interpreter: "{{ ansible_playbook_python }}"
+
+- name: Copy per-VM html as index.html to managed node
+  copy:
+    src:  "{{ playbook_dir }}/vm{{ vm_index }}.html"
+    dest: "{{ web_docroot }}/index.html"
+    mode: '0444'
+  notify: Start Apache
+
+- name: Enable Apache on boot
+  service:
+    name: "{{ web_service }}"
+    enabled: true

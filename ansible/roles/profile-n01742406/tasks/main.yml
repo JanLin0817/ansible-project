@@ -1,0 +1,7 @@
+---
+- name: Append TMOUT block to /etc/profile
+  blockinfile:
+    path: /etc/profile
+    block: |
+      #Test block added by Ansible......{{ profile_username }}
+      export TMOUT={{ profile_tmout }}

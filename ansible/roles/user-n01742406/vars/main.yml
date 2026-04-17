@@ -1,0 +1,9 @@
+---
+user_list:
+  - user100
+  - user200
+  - user300
+
+user_groups:
+  - cloudadmins
+  - wheel
